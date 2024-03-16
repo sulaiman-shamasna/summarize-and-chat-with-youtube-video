@@ -25,7 +25,7 @@ class VectorDB:
         loader = YoutubeLoader.from_youtube_url(self.url)
         chunks = text_splitter.split_documents(loader.load())
 
-        return Chroma.from_documents(chunks, OpenAIEmbeddings())
+        return chunks, Chroma.from_documents(chunks, OpenAIEmbeddings())
 
 
 class ConversationalRetrievalChain:
@@ -55,10 +55,10 @@ class ConversationalRetrievalChain:
             return_messages=True
         )
         vector_db = VectorDB(url=self.url)
-
-        retriever = vector_db.create_vector_db().as_retriever(search_type="similarity",
-                                                              search_kwargs={"k": 5},
-                                                              )
+        _, chroma_db = vector_db.create_vector_db()
+        retriever = chroma_db.as_retriever(search_type="similarity",
+                                           search_kwargs={"k": 5},
+                                           )
         return RetrievalQA.from_chain_type(
             llm=model,
             retriever=retriever,
