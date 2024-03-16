@@ -1,0 +1,7 @@
+langchain==0.1.11
+youtube-transcript-api
+openai
+tiktoken
+python-dotenv
+gradio==4.20.1
+
