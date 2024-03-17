@@ -8,11 +8,10 @@ import gradio as gr
 import openai
 from dotenv import load_dotenv, find_dotenv
 from langchain.callbacks.base import BaseCallbackHandler
-from footer import DESCRIPTION
-from model import (VectorDB,
-                   ConversationalRetrievalChain,
-                   Summarizer,
-                   MapReduceSummarizer,)
+
+from footer import DESCRIPTION, loading_message
+from model import ConversationalRetrievalChain
+from video_summary import Summary
 
 # Load OpenAI API key from environment variables
 openai.api_key = load_dotenv(find_dotenv())
@@ -58,17 +57,15 @@ def main():
 
     # Create a gradio block
     blocker = gr.Blocks(
-        theme=gr.themes.Default(primary_hue=gr.themes.colors.green, secondary_hue=gr.themes.colors.green))
+        theme=gr.themes.Default(primary_hue=gr.themes.colors.green, secondary_hue=gr.themes.colors.green),
+        title='YouTube Chatbot',
+    )
 
     # Define the Gradio interface
     with blocker as demo:
         gr.Markdown(DESCRIPTION)
 
-        with gr.Tab("Summary"):
-            summary = MapReduceSummarizer(URL).get_summary()
-            gr.Textbox(summary)
-
-        with gr.Tab("QA"):
+        with gr.Tab("QnA"):
 
             chatbot = gr.Chatbot()
             message = gr.Textbox()
@@ -99,6 +96,14 @@ def main():
                 bot, chatbot, chatbot
             )
             clear.click(lambda: None, None, chatbot, queue=False)
+
+        with gr.Tab("Summary - Paragraph"):
+            summary = Summary(URL).get_refine_summary()
+            gr.Textbox(summary)
+
+        with gr.Tab("Summary - Key Points"):
+            summary = Summary(URL).get_map_reduce_summary()
+            gr.Textbox(summary)
 
     # Launch the Gradio interface
     demo.queue()
